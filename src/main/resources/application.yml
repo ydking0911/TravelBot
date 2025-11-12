@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: travelbot
+  config:
+    import: optional:classpath:secret-application.yml
+  main:
+    web-application-type: servlet
+
+langchain:
+  gemini:
+    api-key: ${langchain.geminiApiKey:}
+    model: gemini-2.5-flash
+    temperature: 0.8
+
+logging:
+  level:
+    com.yd.travelbot: INFO
+    com.yd.travelbot.domain.currency: DEBUG  # 환율 API 디버깅용
+    dev.langchain4j: WARN
+    org.springframework.web.servlet.resource: WARN  # favicon.ico 오류를 WARN 레벨로
+    root: WARN
