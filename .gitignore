@@ -56,6 +56,7 @@ Desktop.ini
 # Spring Boot
 application-local.properties
 application-local.yml
+secret-application.yml
 
 # Temporary files
 *.tmp
@@ -73,4 +74,14 @@ local.properties
 # H2 Database files
 *.mv.db
 *.trace.db
+
+# Frontend
+Travel_Chatbot_Interface_Design/node_modules/
+Travel_Chatbot_Interface_Design/dist/
+Travel_Chatbot_Interface_Design/build/
+Travel_Chatbot_Interface_Design/.vite/
+src/main/resources/static-backup/
+
+# Frontend build output (빌드 결과물은 Git에 커밋하지 않음)
+src/main/resources/static/
 

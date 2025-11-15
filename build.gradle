@@ -26,12 +26,88 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-configuration-processor'
+	
+	// LangChain4j
+	implementation 'dev.langchain4j:langchain4j:0.34.0'
+	implementation 'dev.langchain4j:langchain4j-spring-boot-starter:0.34.0'
+	implementation 'dev.langchain4j:langchain4j-google-ai-gemini:0.34.0'
+	
+	// HTTP Client
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	
+	// JSON Processing
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	
+	// Validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+	testImplementation 'org.assertj:assertj-core'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// CLI 입력을 Gradle bootRun과 연결
+tasks.named('bootRun') {
+	standardInput = System.in
+}
+// Frontend npm install task
+// 로컬에서 한 번만 설치하면 재사용됩니다 (node_modules가 있으면 건너뜀)
+task npmInstall(type: Exec) {
+	group = 'build'
+	description = 'Install frontend dependencies (only if node_modules is missing)'
+	workingDir = file('Travel_Chatbot_Interface_Design')
+	commandLine = ['npm', 'install']
+	
+	// Only run if package.json exists
+	doFirst {
+		if (!file('Travel_Chatbot_Interface_Design/package.json').exists()) {
+			throw new GradleException('Frontend package.json not found')
+		}
+	}
+	
+	// Skip if node_modules already exists
+	// 로컬에서 한 번 설치하면 다음부터는 건너뜁니다
+	onlyIf {
+		def nodeModules = file('Travel_Chatbot_Interface_Design/node_modules')
+		!nodeModules.exists() || !nodeModules.isDirectory()
+	}
+}
+
+// Frontend build task
+task buildFrontend(type: Exec) {
+	group = 'build'
+	description = 'Build frontend React application'
+	workingDir = file('Travel_Chatbot_Interface_Design')
+	commandLine = ['npm', 'run', 'build']
+	
+	dependsOn npmInstall
+	
+	doFirst {
+		if (!file('Travel_Chatbot_Interface_Design/package.json').exists()) {
+			throw new GradleException('Frontend package.json not found')
+		}
+	}
+}
+
+// Make processResources depend on buildFrontend
+processResources.dependsOn buildFrontend
+
+// Clean task for frontend
+task cleanFrontend(type: Delete) {
+	group = 'clean'
+	description = 'Clean frontend build artifacts'
+	delete file('src/main/resources/static')
+}
+
+// Make clean depend on cleanFrontend
+clean.dependsOn cleanFrontend
+
